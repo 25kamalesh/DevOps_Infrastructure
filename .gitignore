@@ -1,0 +1,3 @@
+.terraform
+terraform.tfstate*
+MY_LOGIN_KEY_DevOps_private
