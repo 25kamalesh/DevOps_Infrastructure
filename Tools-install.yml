@@ -1,0 +1,84 @@
+---
+- name: Install Docker and deploy Jenkins, Nexus, SonarQube
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release | lower }} stable"
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+# Jenkins
+- name: Deploy Jenkins
+  hosts: Jenkins-Server
+  become: yes
+  tasks:
+    - name: Run Jenkins container
+      docker_container:
+        name: jenkins
+        image: jenkins/jenkins:lts
+        ports:
+          - "8080:8080"
+          - "50000:50000"
+        volumes:
+          - jenkins_home:/var/jenkins_home
+        state: started
+
+# Nexus
+- name: Deploy Nexus
+  hosts: Nexus-Repo-Server
+  become: yes
+  tasks:
+    - name: Run Nexus Container
+      docker_container:
+        name: nexus
+        image: sonatype/nexus3
+        ports:
+          - "8081:8081"
+        volumes:
+          - nexus-data:/nexus-data
+        state: started
+
+# SonarQube
+- name: Deploy SonarQube
+  hosts: Sonarqube-Server
+  become: yes
+  tasks:
+    - name: Run SonarQube container
+      docker_container:
+        name: sonarqube
+        image: sonarqube:latest
+        ports:
+          - "9000:9000"
+        state: started
+
