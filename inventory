@@ -1,0 +1,15 @@
+all:
+  vars:
+    ansible_user: ubuntu
+    ansible_ssh_private_key_file: T_login_key.pem
+
+  hosts:
+    Jenkins-Server:
+      ansible_host: 172.31.81.205
+
+    Sonarqube-Server:
+      ansible_host: 172.31.85.71
+
+    Nexus-Repo-Server:
+      ansible_host: 172.31.80.122
+
